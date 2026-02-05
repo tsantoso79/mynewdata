@@ -1,0 +1,126 @@
+###############################################################################
+# WORKFLOW 05: Commission & Income Tracker
+# Tracks commissions from policies sold, renewal commissions, bonuses,
+# and generates income reports.
+###############################################################################
+name: "05 - Commission & Income Tracker"
+
+on:
+  # Weekly summary every Monday at 8 AM
+  schedule:
+    - cron: "0 8 * * 1"
+  repository_dispatch:
+    types: [policy_sold, commission_received, chargeback]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (log_sale, log_commission, generate_report, forecast)"
+        required: true
+        default: "generate_report"
+      policy_id:
+        description: "Policy ID (for log_sale/log_commission)"
+        required: false
+      amount:
+        description: "Amount (for log_sale/log_commission)"
+        required: false
+      report_period:
+        description: "Report period (weekly, monthly, quarterly, yearly)"
+        required: false
+        default: "monthly"
+
+jobs:
+  log-new-sale:
+    name: "Log New Policy Sale"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'policy_sold') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'log_sale')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Calculate commission
+        run: |
+          echo "COMMISSION CALCULATION"
+          echo "======================"
+          echo "Policy types and typical commission rates:"
+          echo "  Life Insurance:      55-110% first year, 2-5% renewal"
+          echo "  Health Insurance:    3-6% of premium"
+          echo "  Auto Insurance:      10-15% of premium"
+          echo "  Home Insurance:      10-15% of premium"
+          echo "  Annuities:           1-8% of premium"
+          echo "  Mutual Funds:        3-6% front load"
+          echo ""
+          echo "Calculating based on policy details..."
+
+      - name: Track in ledger
+        run: |
+          echo "Commission logged:"
+          echo "  Policy: ${{ inputs.policy_id }}"
+          echo "  Expected commission: ${{ inputs.amount }}"
+          echo "  Status: Pending carrier payment"
+          echo "  Expected payment date: $(date -d '+30 days' +%Y-%m-%d)"
+
+      - name: Check bonus thresholds
+        run: |
+          echo "BONUS THRESHOLD CHECK"
+          echo "  Checking quarterly production bonus..."
+          echo "  Checking annual contest standings..."
+          echo "  Checking carrier incentive trip qualifications..."
+
+  generate-report:
+    name: "Generate Income Report"
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'generate_report')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile income data
+        run: |
+          PERIOD="${{ inputs.report_period || 'weekly' }}"
+          echo "## Commission & Income Report ($PERIOD)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Revenue Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Category | Amount | vs Last Period |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|----------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| New Policy Commissions | *(from CRM)* | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Renewal Commissions | *(from CRM)* | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bonuses & Overrides | *(from CRM)* | |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Total** | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | Policies | Est. Commission |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|----------|-----------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Pending Issue | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Awaiting Payment | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Chargebacks Risk | | |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Track chargebacks
+        run: |
+          echo "### Chargeback Watch" >> $GITHUB_STEP_SUMMARY
+          echo "Policies in first-year chargeback window:" >> $GITHUB_STEP_SUMMARY
+          echo "  - Monitoring for cancellations/lapses" >> $GITHUB_STEP_SUMMARY
+          echo "  - Trigger retention outreach for at-risk policies" >> $GITHUB_STEP_SUMMARY
+
+  forecast:
+    name: "Commission Forecast"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'forecast'
+    steps:
+      - name: Generate forecast
+        run: |
+          echo "## Commission Forecast" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next 3 Months Projected Income" >> $GITHUB_STEP_SUMMARY
+          echo "Based on:" >> $GITHUB_STEP_SUMMARY
+          echo "  - Current pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "  - Renewal book" >> $GITHUB_STEP_SUMMARY
+          echo "  - Historical close rates" >> $GITHUB_STEP_SUMMARY
+          echo "  - Seasonal trends" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Month | Projected | Confidence |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-----------|------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Month 1 | *(calculated)* | High |" >> $GITHUB_STEP_SUMMARY
+          echo "| Month 2 | *(calculated)* | Medium |" >> $GITHUB_STEP_SUMMARY
+          echo "| Month 3 | *(calculated)* | Low |" >> $GITHUB_STEP_SUMMARY

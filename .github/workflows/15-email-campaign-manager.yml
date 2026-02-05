@@ -1,0 +1,143 @@
+###############################################################################
+# WORKFLOW 15: Email & SMS Campaign Manager
+# Manages drip campaigns, newsletters, seasonal promotions, and targeted
+# outreach campaigns for the agent's book of business.
+###############################################################################
+name: "15 - Email & SMS Campaign Manager"
+
+on:
+  schedule:
+    # Monthly newsletter - 1st of each month
+    - cron: "0 9 1 * *"
+    # Quarterly review campaign
+    - cron: "0 9 1 1,4,7,10 *"
+  repository_dispatch:
+    types: [trigger_campaign]
+  workflow_dispatch:
+    inputs:
+      campaign_type:
+        description: "Campaign (newsletter, seasonal, product_launch, retention, reactivation, event_invite)"
+        required: true
+        default: "newsletter"
+      segment:
+        description: "Audience segment (all, life_clients, auto_clients, home_clients, prospects, vip, dormant)"
+        required: false
+        default: "all"
+      custom_subject:
+        description: "Custom email subject (optional)"
+        required: false
+
+jobs:
+  monthly-newsletter:
+    name: "Monthly Newsletter"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'schedule' && github.event.schedule == '0 9 1 * *') ||
+      (github.event_name == 'workflow_dispatch' && inputs.campaign_type == 'newsletter')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile newsletter content
+        run: |
+          MONTH=$(date +%B' '%Y)
+          echo "MONTHLY NEWSLETTER - $MONTH"
+          echo "============================="
+          echo ""
+          echo "Content blocks:"
+          echo "  1. Agent personal note / market update"
+          echo "  2. Seasonal insurance tips"
+          echo "  3. Product spotlight"
+          echo "  4. Client success story / testimonial"
+          echo "  5. FAQ or myth-busting section"
+          echo "  6. Referral program reminder"
+          echo "  7. Upcoming events"
+          echo "  8. Contact information"
+
+      - name: Segment and send
+        run: |
+          echo "DISTRIBUTION:"
+          echo "  Segment: All active clients and warm prospects"
+          echo "  Personalization: First name, agent name, local content"
+          echo "  Send time: Optimized per recipient"
+          echo "  Track: Opens, clicks, unsubscribes"
+
+  seasonal-campaigns:
+    name: "Seasonal Campaign"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.campaign_type == 'seasonal'
+    steps:
+      - name: Run seasonal campaign
+        run: |
+          MONTH=$(date +%m)
+          echo "SEASONAL CAMPAIGNS BY MONTH:"
+          echo "  Jan: New Year financial review / resolution"
+          echo "  Feb: Valentine's - protect what you love"
+          echo "  Mar: Spring cleaning - policy review"
+          echo "  Apr: Tax season - retirement contributions"
+          echo "  May: Home buying season - homeowners insurance"
+          echo "  Jun: Summer travel - travel insurance"
+          echo "  Jul: Mid-year financial checkup"
+          echo "  Aug: Back to school - education savings"
+          echo "  Sep: Life Insurance Awareness Month"
+          echo "  Oct: Open enrollment preparation"
+          echo "  Nov: Thanksgiving - gratitude + year-end review"
+          echo "  Dec: Year-end tax planning / holiday greetings"
+
+  retention-campaign:
+    name: "Client Retention Campaign"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.campaign_type == 'retention'
+    steps:
+      - name: Identify at-risk clients
+        run: |
+          echo "AT-RISK CLIENT IDENTIFICATION:"
+          echo "  Signals:"
+          echo "    - No contact in 6+ months"
+          echo "    - Recent rate increase"
+          echo "    - Claim denied or unsatisfactory"
+          echo "    - Competitor shopping detected"
+          echo "    - Payment issues"
+
+      - name: Launch retention outreach
+        run: |
+          echo "RETENTION OUTREACH:"
+          echo "  1. Personalized 'We value you' email"
+          echo "  2. Exclusive loyalty offer"
+          echo "  3. Free coverage review"
+          echo "  4. Agent personal call"
+          echo "  5. Satisfaction survey"
+
+  reactivation-campaign:
+    name: "Dormant Client Reactivation"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.campaign_type == 'reactivation'
+    steps:
+      - name: Target dormant clients
+        run: |
+          echo "DORMANT CLIENT REACTIVATION:"
+          echo "  Target: Clients with no active policy for 6+ months"
+          echo ""
+          echo "  Sequence:"
+          echo "    Week 1: 'We miss you' email with market update"
+          echo "    Week 2: Exclusive 'come back' offer"
+          echo "    Week 3: Personal call or handwritten note"
+          echo "    Week 4: Final value-proposition email"
+
+  track-campaign-metrics:
+    name: "Campaign Metrics"
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Generate campaign report
+        run: |
+          echo "## Campaign Performance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Emails Sent | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Open Rate | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Click Rate | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unsubscribe Rate | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Replies | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Appointments Booked | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Policies from Campaign | |" >> $GITHUB_STEP_SUMMARY

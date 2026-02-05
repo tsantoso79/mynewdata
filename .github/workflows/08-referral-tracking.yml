@@ -1,0 +1,135 @@
+###############################################################################
+# WORKFLOW 08: Referral Tracking & Management
+# Tracks referrals received, sends thank-you notes, monitors conversion,
+# and manages referral reward programs.
+###############################################################################
+name: "08 - Referral Tracking & Management"
+
+on:
+  repository_dispatch:
+    types: [new_referral, referral_converted]
+  schedule:
+    - cron: "0 9 * * 1"  # Weekly referral report on Mondays
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (log_referral, thank_referrer, track_conversion, generate_report)"
+        required: true
+        default: "generate_report"
+      referrer_name:
+        description: "Name of person who referred"
+        required: false
+      referred_name:
+        description: "Name of referred prospect"
+        required: false
+      referrer_client_id:
+        description: "Client ID of referrer"
+        required: false
+
+jobs:
+  log-referral:
+    name: "Log New Referral"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'new_referral') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'log_referral')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create referral record
+        run: |
+          REF_ID="REF-$(date +%Y%m%d%H%M%S)"
+          echo "REFERRAL LOGGED: $REF_ID"
+          echo "  Referrer: ${{ inputs.referrer_name }}"
+          echo "  Referred: ${{ inputs.referred_name }}"
+          echo "  Date: $(date +%Y-%m-%d)"
+
+      - name: Thank the referrer
+        run: |
+          echo "REFERRER THANK-YOU SEQUENCE:"
+          echo "  1. Immediate: Thank-you text/call"
+          echo "  2. Same day: Personalized thank-you email"
+          echo "  3. Within 3 days: Handwritten thank-you card"
+          echo "  4. If converted: Referral reward notification"
+
+      - name: Process referred lead
+        run: |
+          echo "REFERRED LEAD PROCESSING:"
+          echo "  1. Create lead in CRM (source: referral)"
+          echo "  2. Assign highest priority score"
+          echo "  3. Contact within 24 hours"
+          echo "  4. Mention referrer connection in outreach"
+          echo "  5. Trigger new-lead follow-up sequence"
+
+  track-conversion:
+    name: "Track Referral Conversion"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'referral_converted') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'track_conversion')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update referral status
+        run: |
+          echo "REFERRAL CONVERTED!"
+          echo "  1. Mark referral as converted in CRM"
+          echo "  2. Calculate referral reward"
+          echo "  3. Notify referrer of successful conversion"
+          echo "  4. Process referral bonus/reward"
+          echo "  5. Update referral leaderboard"
+
+      - name: Process referral reward
+        run: |
+          echo "REFERRAL REWARDS:"
+          echo "  Tier 1 (1-2 referrals/year):  Gift card"
+          echo "  Tier 2 (3-5 referrals/year):  Premium gift"
+          echo "  Tier 3 (6+ referrals/year):   VIP experience + discount"
+          echo ""
+          echo "  Special: Policy discount for active referrers"
+
+  weekly-referral-report:
+    name: "Weekly Referral Report"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate referral metrics
+        run: |
+          echo "## Weekly Referral Report - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | This Week | MTD | YTD |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-----------|-----|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| Referrals Received | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Referrals Contacted | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Referrals Converted | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Conversion Rate | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Revenue from Referrals | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Top Referrers" >> $GITHUB_STEP_SUMMARY
+          echo "*(populated from CRM)*" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Pending Follow-Ups" >> $GITHUB_STEP_SUMMARY
+          echo "*(referrals not yet contacted)*" >> $GITHUB_STEP_SUMMARY
+
+  ask-for-referrals:
+    name: "Referral Request Campaigns"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Identify referral-ready clients
+        run: |
+          echo "REFERRAL REQUEST TARGETING:"
+          echo "  Ideal candidates to ask for referrals:"
+          echo "  1. Clients with recent positive interactions"
+          echo "  2. Clients with claims resolved successfully"
+          echo "  3. Long-tenure loyal clients"
+          echo "  4. Clients who recently saved money at renewal"
+          echo "  5. Clients who completed onboarding 30 days ago"
+          echo ""
+          echo "  Outreach method:"
+          echo "  - Email with referral link"
+          echo "  - Mention during upcoming appointments"
+          echo "  - Social media referral program post"

@@ -1,0 +1,138 @@
+###############################################################################
+# WORKFLOW 07: Birthday & Anniversary Outreach
+# Automated personal touchpoints: client birthdays, policy anniversaries,
+# and life milestone congratulations.
+###############################################################################
+name: "07 - Birthday & Anniversary Outreach"
+
+on:
+  # Run daily at 7 AM to check for today's events
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: "Check type (birthday, policy_anniversary, life_event, all)"
+        required: false
+        default: "all"
+
+jobs:
+  check-birthdays:
+    name: "Check Client Birthdays"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find today's birthdays
+        run: |
+          TODAY_MMDD=$(date +%m-%d)
+          NEXT_WEEK=$(date -d "+7 days" +%m-%d)
+          echo "Checking birthdays for $TODAY_MMDD..."
+          echo "Pre-loading next 7 days through $NEXT_WEEK..."
+          # In production: Query CRM for birthday matches
+
+      - name: Send birthday greetings
+        run: |
+          echo "BIRTHDAY OUTREACH"
+          echo "=================="
+          echo "Actions for today's birthdays:"
+          echo "  1. Send personalized birthday email"
+          echo "  2. Send birthday text message"
+          echo "  3. Mail physical birthday card (for VIP clients)"
+          echo "  4. Post on social media (if connected and appropriate)"
+          echo ""
+          echo "VIP Client extras:"
+          echo "  - Small gift card or gift basket"
+          echo "  - Personal phone call from agent"
+
+      - name: Age-milestone actions
+        run: |
+          echo "AGE MILESTONE CHECKS:"
+          echo "  Turning 26: Aging off parent's health insurance — offer individual plan"
+          echo "  Turning 30: Life insurance rates discussion"
+          echo "  Turning 40: Retirement planning review"
+          echo "  Turning 50: Long-term care insurance discussion"
+          echo "  Turning 59.5: Retirement distribution planning"
+          echo "  Turning 62: Social Security planning"
+          echo "  Turning 65: Medicare enrollment assistance"
+
+  check-policy-anniversaries:
+    name: "Check Policy Anniversaries"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find policy anniversaries
+        run: |
+          echo "POLICY ANNIVERSARY OUTREACH"
+          echo "============================"
+          echo "Actions:"
+          echo "  1. Send 'thank you for your loyalty' email"
+          echo "  2. Include coverage review invitation"
+          echo "  3. Highlight claims-free discount (if applicable)"
+          echo "  4. Mention loyalty rewards or benefits"
+          echo "  5. Ask for referral"
+
+      - name: Multi-year milestones
+        run: |
+          echo "MILESTONE CELEBRATIONS:"
+          echo "  1 year:  Thank you card"
+          echo "  3 years: Loyalty discount review"
+          echo "  5 years: Premium client status + gift"
+          echo "  10 years: VIP client recognition"
+
+  check-life-events:
+    name: "Check Life Event Opportunities"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Monitor life events
+        run: |
+          echo "LIFE EVENT TRIGGERS"
+          echo "==================="
+          echo "Monitor for and respond to:"
+          echo ""
+          echo "  Marriage/Engagement:"
+          echo "    - Congratulations message"
+          echo "    - Combined policy review offer"
+          echo "    - Beneficiary update reminder"
+          echo ""
+          echo "  New Baby:"
+          echo "    - Congratulations gift/card"
+          echo "    - Life insurance increase discussion"
+          echo "    - Education savings (529) introduction"
+          echo "    - Will/estate planning referral"
+          echo ""
+          echo "  New Home Purchase:"
+          echo "    - Homeowners insurance quote"
+          echo "    - Umbrella policy discussion"
+          echo "    - Mortgage protection insurance"
+          echo ""
+          echo "  Job Change/Promotion:"
+          echo "    - Benefits gap analysis"
+          echo "    - Disability insurance review"
+          echo "    - Retirement rollover assistance"
+          echo ""
+          echo "  Retirement:"
+          echo "    - Income planning consultation"
+          echo "    - Medicare supplement assistance"
+          echo "    - Long-term care review"
+
+  generate-outreach-report:
+    name: "Daily Outreach Report"
+    runs-on: ubuntu-latest
+    needs: [check-birthdays, check-policy-anniversaries, check-life-events]
+    steps:
+      - name: Create report
+        run: |
+          echo "## Daily Personal Outreach Report - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Birthdays Today" >> $GITHUB_STEP_SUMMARY
+          echo "*(populated from CRM)*" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Policy Anniversaries" >> $GITHUB_STEP_SUMMARY
+          echo "*(populated from CRM)*" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Life Event Follow-Ups" >> $GITHUB_STEP_SUMMARY
+          echo "*(populated from CRM)*" >> $GITHUB_STEP_SUMMARY

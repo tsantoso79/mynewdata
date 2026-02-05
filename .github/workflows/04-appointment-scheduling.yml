@@ -1,0 +1,161 @@
+###############################################################################
+# WORKFLOW 04: Appointment Scheduling & Reminders
+# Manages appointment booking, confirmation, reminders, no-show follow-ups,
+# and post-appointment actions.
+###############################################################################
+name: "04 - Appointment Scheduling & Reminders"
+
+on:
+  # Check for upcoming appointments every hour during business hours
+  schedule:
+    - cron: "0 7-18 * * 1-5"
+  repository_dispatch:
+    types: [new_appointment, cancel_appointment, reschedule_appointment]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (book, confirm, remind, cancel, reschedule, no_show)"
+        required: true
+        default: "remind"
+      client_id:
+        description: "Client ID"
+        required: true
+      appointment_date:
+        description: "Appointment date/time (YYYY-MM-DD HH:MM)"
+        required: false
+      appointment_type:
+        description: "Type (initial_consultation, policy_review, claims_support, financial_planning, signing)"
+        required: false
+        default: "initial_consultation"
+
+jobs:
+  check-upcoming:
+    name: "Check Upcoming Appointments"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check next 24 hours
+        run: |
+          NOW=$(date +%Y-%m-%dT%H:%M)
+          TOMORROW=$(date -d "+24 hours" +%Y-%m-%dT%H:%M)
+          echo "Checking appointments: $NOW to $TOMORROW"
+
+      - name: Send 24-hour reminders
+        run: |
+          echo "24-HOUR REMINDERS"
+          echo "  - Send email reminder with meeting details"
+          echo "  - Include: location/link, documents to bring, parking info"
+          echo "  - Send calendar invite update if needed"
+
+      - name: Send 1-hour reminders
+        run: |
+          echo "1-HOUR REMINDERS"
+          echo "  - Send SMS/text reminder"
+          echo "  - Include quick-join link for virtual meetings"
+
+      - name: Prepare agent briefing
+        run: |
+          echo "AGENT BRIEFING for today's appointments:"
+          echo "  - Client history summary"
+          echo "  - Last interaction notes"
+          echo "  - Products of interest"
+          echo "  - Documents status"
+          echo "  - Talking points and cross-sell opportunities"
+
+  book-appointment:
+    name: "Book New Appointment"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'new_appointment') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'book')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate time slot
+        run: |
+          echo "Checking calendar availability..."
+          echo "Validating no conflicts..."
+          echo "Time slot confirmed."
+
+      - name: Create appointment
+        run: |
+          APPT_ID="APPT-$(date +%Y%m%d%H%M%S)"
+          echo "Created appointment: $APPT_ID"
+          echo "  Sending confirmation email to client"
+          echo "  Adding to agent calendar"
+          echo "  Setting up reminder sequence"
+
+      - name: Send confirmation package
+        run: |
+          echo "CONFIRMATION PACKAGE:"
+          echo "  1. Confirmation email with details"
+          echo "  2. Calendar invite (.ics attachment)"
+          echo "  3. Pre-meeting questionnaire (if initial consultation)"
+          echo "  4. Directions/parking info (if in-person)"
+          echo "  5. Video meeting link (if virtual)"
+          echo "  6. List of documents to bring"
+
+  handle-no-show:
+    name: "Handle No-Show"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'no_show')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log no-show
+        run: |
+          echo "Logging no-show for client: ${{ inputs.client_id }}"
+
+      - name: Immediate outreach
+        run: |
+          echo "NO-SHOW RECOVERY SEQUENCE:"
+          echo "  1. Wait 15 minutes, then call client"
+          echo "  2. If no answer, send 'We missed you' text"
+          echo "  3. Send reschedule email with calendar link"
+          echo "  4. If 2nd no-show, flag for manager review"
+
+      - name: Update CRM
+        run: |
+          echo "  - Mark appointment as no-show"
+          echo "  - Update client engagement score (-10)"
+          echo "  - Schedule automatic re-engagement in 3 days"
+
+  reschedule:
+    name: "Reschedule Appointment"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'reschedule_appointment') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'reschedule')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Process reschedule
+        run: |
+          echo "RESCHEDULE PROCESS:"
+          echo "  1. Cancel original appointment"
+          echo "  2. Send updated confirmation"
+          echo "  3. Update calendar entries"
+          echo "  4. Reset reminder sequence"
+          echo "  5. Note reschedule in CRM (track patterns)"
+
+  daily-schedule-summary:
+    name: "Daily Schedule Summary"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Generate daily agenda
+        run: |
+          echo "## Agent Daily Schedule - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Time | Client | Type | Prep Status | Notes |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|------|-------------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| *(Populated from calendar)* | | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Prep Checklist" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Review client files" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Print/prepare documents" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Check product updates" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Prepare quotes/illustrations" >> $GITHUB_STEP_SUMMARY

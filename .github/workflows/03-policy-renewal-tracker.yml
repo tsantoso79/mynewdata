@@ -1,0 +1,155 @@
+###############################################################################
+# WORKFLOW 03: Policy Renewal Tracker
+# Monitors upcoming policy renewals and triggers outreach campaigns
+# at 90, 60, 30, and 7 days before expiry.
+###############################################################################
+name: "03 - Policy Renewal Tracker"
+
+on:
+  # Run daily at 7 AM to check renewals
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: "How many days ahead to check for renewals"
+        required: false
+        default: "90"
+
+env:
+  CRM_API_URL: ${{ secrets.CRM_API_URL }}
+  CRM_API_KEY: ${{ secrets.CRM_API_KEY }}
+
+jobs:
+  scan-renewals:
+    name: "Scan Upcoming Renewals"
+    runs-on: ubuntu-latest
+    outputs:
+      renewals_90: ${{ steps.scan.outputs.renewals_90 }}
+      renewals_60: ${{ steps.scan.outputs.renewals_60 }}
+      renewals_30: ${{ steps.scan.outputs.renewals_30 }}
+      renewals_7: ${{ steps.scan.outputs.renewals_7 }}
+      expired: ${{ steps.scan.outputs.expired }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan renewal dates
+        id: scan
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          D90=$(date -d "+90 days" +%Y-%m-%d)
+          D60=$(date -d "+60 days" +%Y-%m-%d)
+          D30=$(date -d "+30 days" +%Y-%m-%d)
+          D7=$(date -d "+7 days" +%Y-%m-%d)
+
+          echo "Scanning renewals as of $TODAY..."
+          echo "  90-day window: $TODAY to $D90"
+          echo "  60-day window: $TODAY to $D60"
+          echo "  30-day window: $TODAY to $D30"
+          echo "  7-day window:  $TODAY to $D7"
+
+          # In production: Query CRM/policy management system
+          # curl "$CRM_API_URL/policies?renewal_before=$D90" -H "Authorization: Bearer $CRM_API_KEY"
+
+          echo "renewals_90=0" >> $GITHUB_OUTPUT
+          echo "renewals_60=0" >> $GITHUB_OUTPUT
+          echo "renewals_30=0" >> $GITHUB_OUTPUT
+          echo "renewals_7=0" >> $GITHUB_OUTPUT
+          echo "expired=0" >> $GITHUB_OUTPUT
+
+  notify-90-day:
+    name: "90-Day Renewal Notices"
+    runs-on: ubuntu-latest
+    needs: scan-renewals
+    steps:
+      - name: Send 90-day pre-renewal emails
+        run: |
+          echo "90-DAY RENEWAL NOTICE CAMPAIGN"
+          echo "==============================="
+          echo "Actions:"
+          echo "  1. Send 'Your policy renews soon' email"
+          echo "  2. Include current coverage summary"
+          echo "  3. Highlight any new product options"
+          echo "  4. Offer early renewal discount if applicable"
+          echo "  5. Include calendar link for review meeting"
+
+  notify-60-day:
+    name: "60-Day Renewal Outreach"
+    runs-on: ubuntu-latest
+    needs: scan-renewals
+    steps:
+      - name: Trigger 60-day outreach
+        run: |
+          echo "60-DAY RENEWAL OUTREACH"
+          echo "======================="
+          echo "Actions:"
+          echo "  1. Personal phone call to discuss renewal"
+          echo "  2. Review current coverage vs. needs"
+          echo "  3. Run comparison quotes from carriers"
+          echo "  4. Identify upsell/cross-sell opportunities"
+          echo "  5. Schedule in-person or video review meeting"
+
+  notify-30-day:
+    name: "30-Day Urgent Renewal"
+    runs-on: ubuntu-latest
+    needs: scan-renewals
+    steps:
+      - name: Trigger 30-day urgent actions
+        run: |
+          echo "30-DAY URGENT RENEWAL"
+          echo "====================="
+          echo "Actions:"
+          echo "  1. Send renewal reminder with updated quote"
+          echo "  2. Highlight coverage gap risks"
+          echo "  3. Prepare renewal paperwork"
+          echo "  4. Send e-signature documents if ready"
+          echo "  5. Text message reminder"
+
+  notify-7-day:
+    name: "7-Day Critical Renewal"
+    runs-on: ubuntu-latest
+    needs: scan-renewals
+    steps:
+      - name: Trigger 7-day critical actions
+        run: |
+          echo "7-DAY CRITICAL RENEWAL - IMMEDIATE ACTION"
+          echo "=========================================="
+          echo "Actions:"
+          echo "  1. URGENT call to client"
+          echo "  2. Send final renewal notice via email + SMS"
+          echo "  3. Escalate to manager if no response"
+          echo "  4. Prepare lapse prevention documentation"
+          echo "  5. Notify compliance team of at-risk policy"
+
+  handle-expired:
+    name: "Handle Expired Policies"
+    runs-on: ubuntu-latest
+    needs: scan-renewals
+    steps:
+      - name: Process lapsed policies
+        run: |
+          echo "LAPSED POLICY HANDLING"
+          echo "======================"
+          echo "Actions:"
+          echo "  1. Notify client of lapse and risks"
+          echo "  2. Offer reinstatement options"
+          echo "  3. Log compliance record"
+          echo "  4. Update CRM status"
+          echo "  5. Add to re-engagement campaign"
+
+  generate-renewal-report:
+    name: "Generate Renewal Pipeline Report"
+    runs-on: ubuntu-latest
+    needs: [scan-renewals]
+    steps:
+      - name: Create renewal dashboard
+        run: |
+          echo "## Policy Renewal Pipeline - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Window | Count | Priority | Action |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 90 days | ${{ needs.scan-renewals.outputs.renewals_90 }} | Low | Email campaign |" >> $GITHUB_STEP_SUMMARY
+          echo "| 60 days | ${{ needs.scan-renewals.outputs.renewals_60 }} | Medium | Phone outreach |" >> $GITHUB_STEP_SUMMARY
+          echo "| 30 days | ${{ needs.scan-renewals.outputs.renewals_30 }} | High | Urgent follow-up |" >> $GITHUB_STEP_SUMMARY
+          echo "| 7 days  | ${{ needs.scan-renewals.outputs.renewals_7 }} | Critical | Immediate call |" >> $GITHUB_STEP_SUMMARY
+          echo "| Expired | ${{ needs.scan-renewals.outputs.expired }} | Emergency | Reinstatement |" >> $GITHUB_STEP_SUMMARY

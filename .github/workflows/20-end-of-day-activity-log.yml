@@ -1,0 +1,122 @@
+###############################################################################
+# WORKFLOW 20: Activity Logging & Performance Tracking
+# Logs daily sales activities and calculates performance metrics against
+# goals. Provides coaching insights and trend analysis.
+###############################################################################
+name: "20 - Activity Log & Performance Tracker"
+
+on:
+  repository_dispatch:
+    types: [log_activity]
+  schedule:
+    # End of day summary
+    - cron: "0 18 * * 1-5"
+    # Weekly performance review
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (log_activity, daily_summary, weekly_review, set_goals)"
+        required: true
+        default: "daily_summary"
+      activity_type:
+        description: "Activity (call, email, meeting, proposal, application, policy_issued)"
+        required: false
+      count:
+        description: "Number of activities"
+        required: false
+        default: "1"
+
+jobs:
+  log-activity:
+    name: "Log Sales Activity"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'log_activity') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'log_activity')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record activity
+        run: |
+          echo "ACTIVITY LOGGED"
+          echo "  Type: ${{ inputs.activity_type }}"
+          echo "  Count: ${{ inputs.count }}"
+          echo "  Time: $(date +%Y-%m-%dT%H:%M)"
+          echo ""
+          echo "Activity types tracked:"
+          echo "  - Outbound calls"
+          echo "  - Inbound calls"
+          echo "  - Emails sent"
+          echo "  - Text messages"
+          echo "  - Appointments set"
+          echo "  - Appointments held"
+          echo "  - Proposals/quotes delivered"
+          echo "  - Applications submitted"
+          echo "  - Policies issued"
+          echo "  - Referrals asked/received"
+          echo "  - Networking events attended"
+          echo "  - Social media posts"
+
+  daily-performance:
+    name: "Daily Performance Summary"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'schedule' && github.event.schedule == '0 18 * * 1-5') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'daily_summary')
+    steps:
+      - name: Generate daily scorecard
+        run: |
+          echo "## Daily Activity Scorecard - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Activity vs Goals" >> $GITHUB_STEP_SUMMARY
+          echo "| Activity | Today | Daily Goal | WTD | Weekly Goal | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|------------|-----|-------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Outbound Calls | | 20 | | 100 | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Contacts Made | | 8 | | 40 | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Appointments Set | | 2 | | 10 | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Appointments Held | | 2 | | 8 | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Proposals Sent | | 1 | | 5 | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Applications | | 1 | | 3 | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Referrals Asked | | 2 | | 10 | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Success Ratios" >> $GITHUB_STEP_SUMMARY
+          echo "| Ratio | Value | Benchmark |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|-----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Call-to-Contact | | 40% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Contact-to-Appointment | | 25% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Appointment-to-Proposal | | 80% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Proposal-to-Close | | 50% |" >> $GITHUB_STEP_SUMMARY
+
+  weekly-performance:
+    name: "Weekly Performance Review"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'schedule' && github.event.schedule == '0 8 * * 1') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'weekly_review')
+    steps:
+      - name: Generate weekly review
+        run: |
+          echo "## Weekly Performance Review" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Trends (Last 4 Weeks)" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Wk-4 | Wk-3 | Wk-2 | Wk-1 | Trend |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|------|------|------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Calls | | | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Appointments | | | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Proposals | | | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Closed | | | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Premium | | | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Coaching Insights" >> $GITHUB_STEP_SUMMARY
+          echo "- Area for improvement: *(auto-detected from ratios)*" >> $GITHUB_STEP_SUMMARY
+          echo "- Strength: *(auto-detected from metrics)*" >> $GITHUB_STEP_SUMMARY
+          echo "- Recommendation: *(based on trends)*" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Goal Progress (MTD/YTD)" >> $GITHUB_STEP_SUMMARY
+          echo "| Goal | Target | Actual | % Complete |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|--------|------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Annual Premium | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| New Clients | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Retention Rate | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Referrals | | | |" >> $GITHUB_STEP_SUMMARY

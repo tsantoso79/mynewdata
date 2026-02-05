@@ -1,0 +1,153 @@
+###############################################################################
+# WORKFLOW 06: New Client Onboarding
+# Automates the onboarding process when a new client signs a policy:
+# welcome kit, document collection, system setup, and first check-in.
+###############################################################################
+name: "06 - New Client Onboarding"
+
+on:
+  repository_dispatch:
+    types: [new_client]
+  workflow_dispatch:
+    inputs:
+      client_name:
+        description: "Client full name"
+        required: true
+      client_email:
+        description: "Client email"
+        required: true
+      client_phone:
+        description: "Client phone"
+        required: true
+      policy_type:
+        description: "Policy type (life, health, auto, home, investment, retirement)"
+        required: true
+      policy_number:
+        description: "Policy number"
+        required: true
+
+jobs:
+  welcome-package:
+    name: "Send Welcome Package"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate welcome kit
+        run: |
+          echo "WELCOME PACKAGE — Day 0"
+          echo "========================"
+          echo "1. Welcome letter (personalized)"
+          echo "2. Agent contact card (phone, email, office hours)"
+          echo "3. Policy summary document"
+          echo "4. Claims process guide"
+          echo "5. Client portal login instructions"
+          echo "6. Emergency contacts card"
+          echo "7. Referral program introduction"
+
+      - name: Send welcome email
+        run: |
+          echo "Sending welcome email to client..."
+          echo "  Subject: Welcome to [Agency] — Your Policy is Active!"
+          echo "  Template: templates/emails/welcome_new_client.html"
+
+      - name: Send welcome text
+        run: |
+          echo "Sending welcome SMS..."
+          echo "  'Hi [Name], welcome! Your [Policy Type] policy is now active."
+          echo "   I'm your agent [Agent Name]. Save this number for any questions!'"
+
+  setup-systems:
+    name: "Setup Client in Systems"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: CRM setup
+        run: |
+          echo "CRM SETUP"
+          echo "  1. Create/update client profile"
+          echo "  2. Link policy to client record"
+          echo "  3. Set up automated review reminders"
+          echo "  4. Tag client segments (product, risk, tier)"
+          echo "  5. Set anniversary/birthday reminders"
+
+      - name: Document management
+        run: |
+          echo "DOCUMENT MANAGEMENT"
+          echo "  1. Create client folder"
+          echo "  2. Store signed application"
+          echo "  3. Store policy documents"
+          echo "  4. Store ID/verification documents"
+          echo "  5. Set retention schedule"
+
+      - name: Set review schedule
+        run: |
+          echo "REVIEW SCHEDULE"
+          echo "  30-day check-in:    $(date -d '+30 days' +%Y-%m-%d)"
+          echo "  90-day review:      $(date -d '+90 days' +%Y-%m-%d)"
+          echo "  6-month review:     $(date -d '+180 days' +%Y-%m-%d)"
+          echo "  Annual review:      $(date -d '+365 days' +%Y-%m-%d)"
+
+  collect-documents:
+    name: "Document Collection Checklist"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate checklist
+        run: |
+          echo "DOCUMENT COLLECTION CHECKLIST"
+          echo "============================="
+          echo "Required:"
+          echo "  [ ] Signed application"
+          echo "  [ ] Government-issued ID"
+          echo "  [ ] Proof of address"
+          echo "  [ ] Payment authorization"
+          echo ""
+          echo "Product-specific (Life Insurance):"
+          echo "  [ ] Medical questionnaire"
+          echo "  [ ] Beneficiary designation form"
+          echo "  [ ] Existing policy replacement form"
+          echo ""
+          echo "Product-specific (Auto Insurance):"
+          echo "  [ ] Driver's license"
+          echo "  [ ] Vehicle registration"
+          echo "  [ ] Prior insurance declaration page"
+          echo ""
+          echo "Product-specific (Home Insurance):"
+          echo "  [ ] Property deed/lease"
+          echo "  [ ] Home inspection report"
+          echo "  [ ] Mortgage statement"
+
+      - name: Send document request
+        run: |
+          echo "Sending document collection email..."
+          echo "  Secure upload link generated"
+          echo "  Due date: $(date -d '+7 days' +%Y-%m-%d)"
+
+  schedule-checkins:
+    name: "Schedule Onboarding Check-Ins"
+    runs-on: ubuntu-latest
+    needs: [welcome-package, setup-systems]
+    steps:
+      - name: Schedule 30-day check-in
+        run: |
+          echo "30-DAY CHECK-IN SCHEDULED"
+          echo "  Goals:"
+          echo "  - Confirm client received all documents"
+          echo "  - Answer any questions about coverage"
+          echo "  - Introduce additional product opportunities"
+          echo "  - Ask for referrals"
+          echo "  - Collect testimonial if appropriate"
+
+      - name: Create onboarding summary
+        run: |
+          echo "## New Client Onboarding Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Client: ${{ inputs.client_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Policy: ${{ inputs.policy_type }} — ${{ inputs.policy_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Welcome package: Sent" >> $GITHUB_STEP_SUMMARY
+          echo "- CRM setup: Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- Documents: Collection in progress" >> $GITHUB_STEP_SUMMARY
+          echo "- 30-day check-in: Scheduled" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,145 @@
+###############################################################################
+# WORKFLOW 10: Claims Support & Tracking
+# Helps agents track client claims, follow up with carriers, and keep
+# clients informed throughout the claims process.
+###############################################################################
+name: "10 - Claims Support & Tracking"
+
+on:
+  repository_dispatch:
+    types: [new_claim, claim_update]
+  schedule:
+    - cron: "0 9 * * 1-5"  # Daily check on weekdays
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (new_claim, update_status, follow_up_carrier, client_update)"
+        required: true
+        default: "follow_up_carrier"
+      client_id:
+        description: "Client ID"
+        required: true
+      claim_number:
+        description: "Claim number"
+        required: false
+      claim_type:
+        description: "Claim type (auto_accident, property_damage, health, life, disability)"
+        required: false
+      status:
+        description: "Current status"
+        required: false
+
+jobs:
+  new-claim:
+    name: "Process New Claim"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'new_claim') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'new_claim')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Intake claim details
+        run: |
+          CLAIM_ID="CLM-$(date +%Y%m%d%H%M%S)"
+          echo "NEW CLAIM INTAKE: $CLAIM_ID"
+          echo "=========================="
+          echo "Checklist:"
+          echo "  [ ] Date of incident"
+          echo "  [ ] Description of incident"
+          echo "  [ ] Photos/documentation"
+          echo "  [ ] Police report (if applicable)"
+          echo "  [ ] Other parties involved"
+          echo "  [ ] Witness information"
+          echo "  [ ] Medical records (if applicable)"
+          echo "  [ ] Repair estimates (if applicable)"
+
+      - name: File with carrier
+        run: |
+          echo "CARRIER FILING:"
+          echo "  1. Submit claim to carrier"
+          echo "  2. Obtain claim number"
+          echo "  3. Document adjuster assignment"
+          echo "  4. Note expected timeline"
+
+      - name: Client communication
+        run: |
+          echo "CLIENT COMMUNICATION:"
+          echo "  1. Confirm claim received"
+          echo "  2. Provide claim number"
+          echo "  3. Explain next steps and timeline"
+          echo "  4. Provide adjuster contact info"
+          echo "  5. Set expectations for updates"
+
+      - name: Set follow-up schedule
+        run: |
+          echo "FOLLOW-UP SCHEDULE:"
+          echo "  Day 3:  Check claim assignment"
+          echo "  Day 7:  Follow up with adjuster"
+          echo "  Day 14: Status update to client"
+          echo "  Day 21: Escalate if no progress"
+          echo "  Day 30: Manager review if unresolved"
+
+  daily-claims-check:
+    name: "Daily Claims Status Check"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check open claims
+        run: |
+          echo "DAILY CLAIMS REVIEW"
+          echo "===================="
+          echo "Checking all open claims for updates..."
+          echo "  - Query carrier portals for status changes"
+          echo "  - Check for overdue follow-ups"
+          echo "  - Identify claims needing escalation"
+          echo "  - Flag claims approaching deadlines"
+
+      - name: Generate claims dashboard
+        run: |
+          echo "## Claims Dashboard - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| New (< 7 days) | |" >> $GITHUB_STEP_SUMMARY
+          echo "| In Progress | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Awaiting Adjuster | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Under Review | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Settlement Offered | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Closed | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Escalated | |" >> $GITHUB_STEP_SUMMARY
+
+  client-update:
+    name: "Send Client Claim Update"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'claim_update') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'client_update')
+    steps:
+      - name: Send status update
+        run: |
+          echo "CLIENT CLAIM UPDATE:"
+          echo "  Claim: ${{ inputs.claim_number }}"
+          echo "  Status: ${{ inputs.status }}"
+          echo ""
+          echo "  Send via:"
+          echo "    - Email with detailed update"
+          echo "    - Text message summary"
+          echo "    - Phone call for significant updates"
+
+  post-claim-followup:
+    name: "Post-Claim Satisfaction Follow-Up"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.status == 'closed'
+    steps:
+      - name: Satisfaction check
+        run: |
+          echo "POST-CLAIM FOLLOW-UP:"
+          echo "  1. Call client to confirm satisfaction"
+          echo "  2. Send satisfaction survey"
+          echo "  3. Review coverage adequacy"
+          echo "  4. Discuss coverage adjustments if needed"
+          echo "  5. Ask for referral (if positive experience)"
+          echo "  6. Leave Google/Yelp review request"

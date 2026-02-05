@@ -1,0 +1,146 @@
+###############################################################################
+# WORKFLOW 13: Daily Sales Activity Dashboard
+# Generates a comprehensive daily view of all sales activities, KPIs,
+# pipeline status, and action items for the agent.
+###############################################################################
+name: "13 - Daily Sales Activity Dashboard"
+
+on:
+  # Morning briefing at 7 AM, end-of-day recap at 6 PM
+  schedule:
+    - cron: "0 7 * * 1-5"
+    - cron: "0 18 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      report_type:
+        description: "Report (morning_briefing, eod_recap, weekly_summary, monthly_summary)"
+        required: false
+        default: "morning_briefing"
+
+jobs:
+  morning-briefing:
+    name: "Morning Sales Briefing"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'schedule' && github.event.schedule == '0 7 * * 1-5') ||
+      (github.event_name == 'workflow_dispatch' && inputs.report_type == 'morning_briefing')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate morning briefing
+        run: |
+          echo "## Good Morning! Daily Sales Briefing - $(date +%A', '%B' '%d', '%Y)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Today's Agenda" >> $GITHUB_STEP_SUMMARY
+          echo "| Time | Activity | Client | Prep |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|----------|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| *(from calendar)* | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Priority Actions Today" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Hot leads to call** *(from CRM)*" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Follow-ups due** *(from follow-up tracker)*" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Proposals to deliver** *(from pipeline)*" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Renewals expiring soon** *(from renewal tracker)*" >> $GITHUB_STEP_SUMMARY
+          echo "5. **Claims to check on** *(from claims tracker)*" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Pipeline Snapshot" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Count | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| New Leads | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Contacted | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Meeting Set | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Proposal Sent | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Negotiation | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Closing | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Birthdays & Events Today" >> $GITHUB_STEP_SUMMARY
+          echo "*(from birthday tracker)*" >> $GITHUB_STEP_SUMMARY
+
+  eod-recap:
+    name: "End-of-Day Recap"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'schedule' && github.event.schedule == '0 18 * * 1-5') ||
+      (github.event_name == 'workflow_dispatch' && inputs.report_type == 'eod_recap')
+    steps:
+      - name: Generate EOD report
+        run: |
+          echo "## End of Day Recap - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Today's Activity Log" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Today | Week-to-Date | Goal |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|--------------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Calls Made | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Emails Sent | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Appointments Held | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Proposals Delivered | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Policies Sold | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Premium Written | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Referrals Received | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Wins Today" >> $GITHUB_STEP_SUMMARY
+          echo "*(auto-populated from activity log)*" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Carry-Over to Tomorrow" >> $GITHUB_STEP_SUMMARY
+          echo "*(incomplete follow-ups and tasks)*" >> $GITHUB_STEP_SUMMARY
+
+  weekly-summary:
+    name: "Weekly Performance Summary"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.report_type == 'weekly_summary'
+    steps:
+      - name: Generate weekly summary
+        run: |
+          echo "## Weekly Performance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### KPIs vs Goals" >> $GITHUB_STEP_SUMMARY
+          echo "| KPI | Target | Actual | % |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|--------|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Calls/Contacts | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Appointments Set | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Appointments Held | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Proposals/Quotes | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Policies Issued | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Premium | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Referrals | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Client Retention | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Conversion Rates" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Rate |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lead -> Contact | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Contact -> Appointment | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Appointment -> Proposal | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Proposal -> Close | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Overall Lead -> Close | |" >> $GITHUB_STEP_SUMMARY
+
+  monthly-summary:
+    name: "Monthly Business Review"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.report_type == 'monthly_summary'
+    steps:
+      - name: Generate monthly review
+        run: |
+          echo "## Monthly Business Review - $(date +%B' '%Y)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Revenue" >> $GITHUB_STEP_SUMMARY
+          echo "- New business premium" >> $GITHUB_STEP_SUMMARY
+          echo "- Renewal premium" >> $GITHUB_STEP_SUMMARY
+          echo "- Commission earned" >> $GITHUB_STEP_SUMMARY
+          echo "- YTD vs annual goal" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Book of Business" >> $GITHUB_STEP_SUMMARY
+          echo "- Total clients" >> $GITHUB_STEP_SUMMARY
+          echo "- New clients added" >> $GITHUB_STEP_SUMMARY
+          echo "- Clients lost" >> $GITHUB_STEP_SUMMARY
+          echo "- Net growth" >> $GITHUB_STEP_SUMMARY
+          echo "- Policies per client average" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Product Mix" >> $GITHUB_STEP_SUMMARY
+          echo "| Product | Policies | Premium | % of Book |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|----------|---------|-----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Life | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Health | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Auto | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Home | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Other | | | |" >> $GITHUB_STEP_SUMMARY

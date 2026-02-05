@@ -1,0 +1,83 @@
+###############################################################################
+# WORKFLOW 17: Training & Certification Tracker
+# Tracks agent training progress, certifications, designations, and
+# professional development requirements.
+###############################################################################
+name: "17 - Training & Certification Tracker"
+
+on:
+  # Monthly check on first Monday
+  schedule:
+    - cron: "0 8 1-7 * 1"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (check_status, log_training, find_courses, certification_reminder)"
+        required: true
+        default: "check_status"
+      certification:
+        description: "Certification name (optional)"
+        required: false
+
+jobs:
+  check-certifications:
+    name: "Check Certification Status"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Review certifications
+        run: |
+          echo "CERTIFICATION & DESIGNATION TRACKER"
+          echo "===================================="
+          echo ""
+          echo "Industry designations tracked:"
+          echo "  [ ] CLU  - Chartered Life Underwriter"
+          echo "  [ ] ChFC - Chartered Financial Consultant"
+          echo "  [ ] CFP  - Certified Financial Planner"
+          echo "  [ ] LUTCF - Life Underwriter Training Council Fellow"
+          echo "  [ ] CPCU - Chartered Property Casualty Underwriter"
+          echo "  [ ] CIC  - Certified Insurance Counselor"
+          echo "  [ ] CISR - Certified Insurance Service Representative"
+          echo "  [ ] RHU  - Registered Health Underwriter"
+          echo ""
+          echo "For each:"
+          echo "  - Current status (active/in-progress/expired)"
+          echo "  - Renewal date"
+          echo "  - CE requirements for maintenance"
+          echo "  - Next steps"
+
+      - name: Check carrier certifications
+        run: |
+          echo "CARRIER PRODUCT CERTIFICATIONS:"
+          echo "  Track certification for each appointed carrier"
+          echo "  Annual product training requirements"
+          echo "  New product launch training"
+
+  find-development:
+    name: "Professional Development"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'find_courses'
+    steps:
+      - name: Recommend training
+        run: |
+          echo "RECOMMENDED TRAINING:"
+          echo ""
+          echo "Based on current book and goals:"
+          echo "  1. Advanced sales techniques"
+          echo "  2. Product-specific deep dives"
+          echo "  3. Digital marketing for agents"
+          echo "  4. Compliance updates"
+          echo "  5. Technology and CRM training"
+          echo "  6. Leadership/management skills"
+
+      - name: Generate training plan
+        run: |
+          echo "## Training & Development Plan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Certification | Status | Deadline | Hours Needed |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------------|--------|----------|--------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| *(from records)* | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Upcoming Training Opportunities" >> $GITHUB_STEP_SUMMARY
+          echo "*(from industry calendar)*" >> $GITHUB_STEP_SUMMARY

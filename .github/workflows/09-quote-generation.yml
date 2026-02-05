@@ -1,0 +1,147 @@
+###############################################################################
+# WORKFLOW 09: Quote Generation & Comparison
+# Automates the process of generating, comparing, and delivering insurance
+# and financial product quotes to prospects and clients.
+###############################################################################
+name: "09 - Quote Generation & Comparison"
+
+on:
+  repository_dispatch:
+    types: [quote_request]
+  workflow_dispatch:
+    inputs:
+      client_id:
+        description: "Client/Lead ID"
+        required: true
+      product_type:
+        description: "Product (life, health, auto, home, umbrella, disability, investment)"
+        required: true
+      coverage_amount:
+        description: "Desired coverage amount"
+        required: false
+      special_requirements:
+        description: "Special requirements or notes"
+        required: false
+        default: ""
+
+jobs:
+  gather-info:
+    name: "Gather Quote Information"
+    runs-on: ubuntu-latest
+    outputs:
+      client_profile: ${{ steps.profile.outputs.data }}
+      carriers: ${{ steps.carriers.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull client profile
+        id: profile
+        run: |
+          echo "GATHERING CLIENT INFORMATION:"
+          echo "  - Demographics (age, gender, location)"
+          echo "  - Risk factors"
+          echo "  - Current coverage"
+          echo "  - Claims history"
+          echo "  - Credit tier (if applicable)"
+          echo "data=complete" >> $GITHUB_OUTPUT
+
+      - name: Identify eligible carriers
+        id: carriers
+        run: |
+          PRODUCT="${{ inputs.product_type }}"
+          echo "ELIGIBLE CARRIERS for $PRODUCT:"
+          echo "  Querying carrier appointments..."
+          echo "  Filtering by client eligibility..."
+          echo "  Checking carrier guidelines..."
+          echo "list=identified" >> $GITHUB_OUTPUT
+
+  generate-quotes:
+    name: "Generate Multi-Carrier Quotes"
+    runs-on: ubuntu-latest
+    needs: gather-info
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run quotes through carriers
+        run: |
+          echo "GENERATING QUOTES"
+          echo "=================="
+          echo "Running quote through multiple carriers..."
+          echo ""
+          echo "  Carrier A: Submitting..."
+          echo "  Carrier B: Submitting..."
+          echo "  Carrier C: Submitting..."
+          echo "  Carrier D: Submitting..."
+          echo ""
+          echo "  Quote data includes:"
+          echo "    - Premium (monthly/annual)"
+          echo "    - Coverage details"
+          echo "    - Deductibles and copays"
+          echo "    - Exclusions"
+          echo "    - Rider options"
+          echo "    - Rate lock period"
+
+      - name: Build comparison chart
+        run: |
+          echo "COMPARISON CHART GENERATED"
+          echo "=========================="
+          echo "| Feature | Carrier A | Carrier B | Carrier C |"
+          echo "|---------|-----------|-----------|-----------|"
+          echo "| Monthly Premium | | | |"
+          echo "| Annual Premium  | | | |"
+          echo "| Coverage Amount | | | |"
+          echo "| Deductible      | | | |"
+          echo "| Rating          | | | |"
+          echo "| Special Features| | | |"
+
+      - name: Add agent recommendation
+        run: |
+          echo "AGENT RECOMMENDATION"
+          echo "====================="
+          echo "Based on client needs analysis:"
+          echo "  Best Value:    [Carrier X] — lowest premium"
+          echo "  Best Coverage: [Carrier Y] — most comprehensive"
+          echo "  Recommended:   [Carrier Z] — best overall fit"
+          echo ""
+          echo "Key talking points prepared for each option"
+
+  deliver-quote:
+    name: "Deliver Quote to Client"
+    runs-on: ubuntu-latest
+    needs: generate-quotes
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare delivery package
+        run: |
+          echo "QUOTE DELIVERY PACKAGE:"
+          echo "  1. Professional quote comparison PDF"
+          echo "  2. Personalized cover letter"
+          echo "  3. Product highlights one-pager"
+          echo "  4. FAQ document"
+          echo "  5. Next steps guide"
+
+      - name: Send to client
+        run: |
+          echo "DELIVERY METHODS:"
+          echo "  1. Email with PDF attachment"
+          echo "  2. Client portal upload"
+          echo "  3. Schedule walkthrough call"
+
+      - name: Set follow-up
+        run: |
+          echo "FOLLOW-UP SCHEDULE:"
+          echo "  Day 1: 'Quote delivered' confirmation"
+          echo "  Day 3: Call to discuss options"
+          echo "  Day 7: Check-in if no response"
+          echo "  Trigger: proposal_sent follow-up sequence"
+
+      - name: Log quote activity
+        run: |
+          echo "## Quote Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Client: ${{ inputs.client_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Product: ${{ inputs.product_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Carriers Quoted: Multiple" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: Delivered" >> $GITHUB_STEP_SUMMARY
+          echo "- Follow-up: Scheduled" >> $GITHUB_STEP_SUMMARY

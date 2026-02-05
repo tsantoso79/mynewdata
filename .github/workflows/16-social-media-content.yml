@@ -1,0 +1,90 @@
+###############################################################################
+# WORKFLOW 16: Social Media Content Scheduler
+# Plans, creates, and schedules social media posts to build the agent's
+# personal brand and generate inbound leads.
+###############################################################################
+name: "16 - Social Media Content Scheduler"
+
+on:
+  # Weekly content planning on Sundays
+  schedule:
+    - cron: "0 18 * * 0"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (plan_week, post_now, review_analytics)"
+        required: true
+        default: "plan_week"
+      platform:
+        description: "Platform (linkedin, facebook, instagram, all)"
+        required: false
+        default: "all"
+
+jobs:
+  weekly-content-plan:
+    name: "Plan Weekly Content"
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'plan_week')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate content calendar
+        run: |
+          echo "WEEKLY SOCIAL MEDIA CONTENT PLAN"
+          echo "================================="
+          echo ""
+          echo "Monday:    Educational tip (insurance/finance)"
+          echo "Tuesday:   Client success story / testimonial"
+          echo "Wednesday: Industry news or market update"
+          echo "Thursday:  Behind-the-scenes / personal brand"
+          echo "Friday:    Fun fact or weekend safety tip"
+          echo "Saturday:  Community involvement / local event"
+          echo ""
+          echo "Content themes this month:"
+          echo "  - Product awareness"
+          echo "  - Financial literacy"
+          echo "  - Risk management tips"
+          echo "  - Community engagement"
+          echo "  - Team/office culture"
+
+      - name: Generate post suggestions
+        run: |
+          echo "POST SUGGESTIONS:"
+          echo ""
+          echo "LinkedIn:"
+          echo "  - Professional insights and market analysis"
+          echo "  - Client success stories (with permission)"
+          echo "  - Industry certifications and achievements"
+          echo "  - Networking and event attendance"
+          echo ""
+          echo "Facebook:"
+          echo "  - Community events and sponsorships"
+          echo "  - Holiday greetings and seasonal tips"
+          echo "  - Referral program announcements"
+          echo "  - Office events and team highlights"
+          echo ""
+          echo "Instagram:"
+          echo "  - Infographics and quick tips"
+          echo "  - Behind-the-scenes stories"
+          echo "  - Client appreciation posts"
+          echo "  - Motivational quotes (finance-related)"
+
+  review-analytics:
+    name: "Review Social Analytics"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'review_analytics'
+    steps:
+      - name: Generate analytics report
+        run: |
+          echo "## Social Media Analytics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Followers | Engagement | Leads |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-----------|------------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| LinkedIn | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Facebook | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Instagram | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Top Performing Posts This Week" >> $GITHUB_STEP_SUMMARY
+          echo "*(from analytics API)*" >> $GITHUB_STEP_SUMMARY

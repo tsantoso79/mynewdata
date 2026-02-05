@@ -1,0 +1,112 @@
+###############################################################################
+# WORKFLOW 11: Cross-Sell & Upsell Opportunity Detection
+# Analyzes client portfolios to identify gaps in coverage and opportunities
+# to offer additional products.
+###############################################################################
+name: "11 - Cross-Sell & Upsell Alerts"
+
+on:
+  # Run weekly on Wednesdays at 9 AM
+  schedule:
+    - cron: "0 9 * * 3"
+  repository_dispatch:
+    types: [coverage_gap_detected, life_event_trigger]
+  workflow_dispatch:
+    inputs:
+      client_id:
+        description: "Client ID (leave blank for full book scan)"
+        required: false
+      scan_type:
+        description: "Scan type (full_book, single_client, segment)"
+        required: false
+        default: "full_book"
+
+jobs:
+  scan-coverage-gaps:
+    name: "Scan for Coverage Gaps"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Analyze client portfolios
+        run: |
+          echo "COVERAGE GAP ANALYSIS"
+          echo "======================"
+          echo ""
+          echo "Scanning client book for opportunities..."
+          echo ""
+          echo "Common gap patterns:"
+          echo "  Auto only -> Add Home (bundle discount)"
+          echo "  Home only -> Add Auto (bundle discount)"
+          echo "  Auto+Home -> Add Umbrella"
+          echo "  No Life Insurance -> Family with dependents"
+          echo "  No Disability -> Working professionals"
+          echo "  No Renters -> Tenants with auto policy"
+          echo "  Low coverage -> Life events (marriage, baby, home)"
+          echo "  No retirement plan -> Age 30+ earners"
+
+      - name: Score opportunities
+        run: |
+          echo "OPPORTUNITY SCORING:"
+          echo "  Factors:"
+          echo "    - Revenue potential (premium size)"
+          echo "    - Client relationship strength"
+          echo "    - Likelihood of acceptance"
+          echo "    - Urgency (coverage gap risk)"
+          echo "    - Time since last product discussion"
+          echo ""
+          echo "  Priority levels:"
+          echo "    HOT:  Life event + coverage gap"
+          echo "    WARM: Coverage gap identified"
+          echo "    COOL: Optimization opportunity"
+
+  generate-recommendations:
+    name: "Generate Agent Recommendations"
+    runs-on: ubuntu-latest
+    needs: scan-coverage-gaps
+    steps:
+      - name: Create recommendation cards
+        run: |
+          echo "AGENT RECOMMENDATION CARDS"
+          echo "=========================="
+          echo ""
+          echo "For each opportunity:"
+          echo "  - Client name & current products"
+          echo "  - Recommended product"
+          echo "  - Reason for recommendation"
+          echo "  - Estimated premium"
+          echo "  - Suggested talking points"
+          echo "  - Best time/method to approach"
+          echo "  - Script/email template link"
+
+      - name: Generate weekly opportunity report
+        run: |
+          echo "## Cross-Sell & Upsell Opportunities - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Top Opportunities This Week" >> $GITHUB_STEP_SUMMARY
+          echo "| Client | Current Products | Recommended | Score | Est. Premium |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-----------------|-------------|-------|--------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| *(populated from analysis)* | | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Opportunity Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Category | Count | Est. Revenue |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|--------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Bundle Upgrades | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage Increases | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| New Product Lines | | |" >> $GITHUB_STEP_SUMMARY
+          echo "| Life Event Triggers | | |" >> $GITHUB_STEP_SUMMARY
+
+  campaign-triggers:
+    name: "Trigger Targeted Campaigns"
+    runs-on: ubuntu-latest
+    needs: generate-recommendations
+    steps:
+      - name: Launch targeted outreach
+        run: |
+          echo "TARGETED CAMPAIGN TRIGGERS:"
+          echo "  1. Bundle discount email to single-policy holders"
+          echo "  2. Life insurance awareness to new parents"
+          echo "  3. Umbrella policy intro to high-net-worth clients"
+          echo "  4. Retirement planning to 40+ clients"
+          echo "  5. Medicare supplement to approaching-65 clients"
+          echo "  6. Renters insurance to auto-only young adults"

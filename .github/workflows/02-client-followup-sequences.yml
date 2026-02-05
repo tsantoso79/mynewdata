@@ -1,0 +1,189 @@
+###############################################################################
+# WORKFLOW 02: Client Follow-Up Sequences
+# Manages automated follow-up cadences for prospects at different stages.
+# Triggers reminders, emails, and tasks based on follow-up schedules.
+###############################################################################
+name: "02 - Client Follow-Up Sequences"
+
+on:
+  # Run daily at 8 AM to check for due follow-ups
+  schedule:
+    - cron: "0 8 * * *"
+  # Trigger when a follow-up is needed
+  repository_dispatch:
+    types: [schedule_followup]
+  workflow_dispatch:
+    inputs:
+      client_id:
+        description: "Client/Lead ID"
+        required: true
+      sequence_type:
+        description: "Sequence type (new_lead, post_meeting, proposal_sent, policy_delivered, dormant_reactivation)"
+        required: true
+        default: "new_lead"
+      start_date:
+        description: "Sequence start date (YYYY-MM-DD)"
+        required: false
+        default: ""
+
+jobs:
+  check-due-followups:
+    name: "Check Due Follow-Ups"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    outputs:
+      followups: ${{ steps.check.outputs.followups }}
+      count: ${{ steps.check.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for due follow-ups
+        id: check
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          echo "Checking follow-ups due on $TODAY..."
+          # In production: Query CRM for due follow-ups
+          # This simulates the check
+          echo "count=0" >> $GITHUB_OUTPUT
+          echo "followups=[]" >> $GITHUB_OUTPUT
+
+      - name: Generate daily follow-up report
+        run: |
+          echo "## Daily Follow-Up Report - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Client | Type | Due Date | Action Required |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|----------|-----------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| *(Generated from CRM data)* | | | |" >> $GITHUB_STEP_SUMMARY
+
+  new-lead-sequence:
+    name: "New Lead Follow-Up Sequence"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.client_payload.sequence == 'new_lead') ||
+      (github.event_name == 'workflow_dispatch' && inputs.sequence_type == 'new_lead')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Day 0 — Immediate acknowledgment"
+        run: |
+          echo "STEP 1: Send welcome SMS/email within 5 minutes"
+          echo "  - Thank them for their interest"
+          echo "  - Introduce yourself and your agency"
+          echo "  - Confirm you'll be in touch shortly"
+          # Template: templates/emails/new_lead_welcome.html
+
+      - name: "Schedule Day 1 — Personal call"
+        run: |
+          echo "STEP 2: Schedule personal call for next business day"
+          echo "  - Action: Phone call to introduce yourself"
+          echo "  - Goal: Understand needs, set appointment"
+          echo "  - Fallback: Leave voicemail + send follow-up text"
+
+      - name: "Schedule Day 3 — Value-add email"
+        run: |
+          echo "STEP 3: Send educational content email"
+          echo "  - Include relevant article or guide"
+          echo "  - Soft CTA to schedule a consultation"
+
+      - name: "Schedule Day 7 — Check-in call"
+        run: |
+          echo "STEP 4: Second call attempt"
+          echo "  - Reference previous touchpoints"
+          echo "  - Offer flexible meeting times"
+
+      - name: "Schedule Day 14 — Final outreach"
+        run: |
+          echo "STEP 5: Final follow-up email"
+          echo "  - Summarize value proposition"
+          echo "  - Include testimonials"
+          echo "  - Clear CTA with calendar link"
+
+      - name: "Schedule Day 30 — Move to nurture"
+        run: |
+          echo "STEP 6: If no response, move to long-term nurture"
+          echo "  - Add to monthly newsletter"
+          echo "  - Add to quarterly check-in list"
+
+  post-meeting-sequence:
+    name: "Post-Meeting Follow-Up"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.client_payload.sequence == 'post_meeting') ||
+      (github.event_name == 'workflow_dispatch' && inputs.sequence_type == 'post_meeting')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Same day — Meeting summary email"
+        run: |
+          echo "Send meeting summary within 2 hours:"
+          echo "  - Key discussion points"
+          echo "  - Agreed next steps"
+          echo "  - Documents discussed"
+          echo "  - Next meeting date if scheduled"
+
+      - name: "Schedule Day 2 — Send proposal/quote"
+        run: |
+          echo "Prepare and send personalized proposal"
+          echo "  - Include options discussed"
+          echo "  - Comparison chart if multiple products"
+          echo "  - Clear pricing breakdown"
+
+      - name: "Schedule Day 5 — Proposal follow-up"
+        run: |
+          echo "Call to discuss proposal"
+          echo "  - Address questions or concerns"
+          echo "  - Offer to adjust if needed"
+
+  proposal-sent-sequence:
+    name: "Proposal Sent Follow-Up"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.client_payload.sequence == 'proposal_sent') ||
+      (github.event_name == 'workflow_dispatch' && inputs.sequence_type == 'proposal_sent')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Day 1 — Confirmation"
+        run: |
+          echo "Confirm proposal received, offer to walk through it"
+
+      - name: "Day 3 — Check-in"
+        run: |
+          echo "Quick call: Any questions about the proposal?"
+
+      - name: "Day 7 — Urgency reminder"
+        run: |
+          echo "Highlight time-sensitive benefits or rate locks"
+
+      - name: "Day 14 — Decision support"
+        run: |
+          echo "Offer comparison or second opinion meeting"
+
+      - name: "Day 21 — Final follow-up"
+        run: |
+          echo "Last structured touch before moving to nurture"
+
+  dormant-reactivation:
+    name: "Dormant Client Reactivation"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.client_payload.sequence == 'dormant_reactivation') ||
+      (github.event_name == 'workflow_dispatch' && inputs.sequence_type == 'dormant_reactivation')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Week 1 — Re-engagement email"
+        run: |
+          echo "Send 'We miss you' or 'Policy review' email"
+          echo "  - Highlight changes in their coverage area"
+          echo "  - Offer free policy review"
+
+      - name: "Week 2 — Personal call"
+        run: |
+          echo "Personal outreach call"
+          echo "  - Reference their existing policies"
+          echo "  - Check for life changes (marriage, home, baby)"
+
+      - name: "Week 4 — Special offer"
+        run: |
+          echo "Send exclusive offer or loyalty benefit"

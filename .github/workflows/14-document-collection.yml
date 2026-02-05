@@ -1,0 +1,131 @@
+###############################################################################
+# WORKFLOW 14: Document Collection & Management
+# Automates requesting, tracking, and organizing client documents needed
+# for applications, claims, and compliance.
+###############################################################################
+name: "14 - Document Collection & Management"
+
+on:
+  repository_dispatch:
+    types: [document_request, document_received]
+  schedule:
+    - cron: "0 10 * * 1-5"  # Daily check for overdue documents
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (request_docs, check_status, send_reminder, mark_received)"
+        required: true
+        default: "check_status"
+      client_id:
+        description: "Client ID"
+        required: true
+      doc_type:
+        description: "Document category (application, claims, compliance, kyc, underwriting)"
+        required: false
+        default: "application"
+
+jobs:
+  request-documents:
+    name: "Send Document Request"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'document_request') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'request_docs')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate document checklist
+        run: |
+          DOC_TYPE="${{ inputs.doc_type }}"
+          echo "DOCUMENT REQUEST: $DOC_TYPE"
+          echo "=========================="
+          echo ""
+          case "$DOC_TYPE" in
+            application)
+              echo "Required for application:"
+              echo "  [ ] Completed application form"
+              echo "  [ ] Government-issued photo ID"
+              echo "  [ ] Proof of income (pay stubs, tax returns)"
+              echo "  [ ] Current coverage declarations page"
+              echo "  [ ] Signed disclosure forms"
+              ;;
+            claims)
+              echo "Required for claims:"
+              echo "  [ ] Incident report / description"
+              echo "  [ ] Photos of damage"
+              echo "  [ ] Police report (if applicable)"
+              echo "  [ ] Repair estimates"
+              echo "  [ ] Medical records (if applicable)"
+              echo "  [ ] Receipts for expenses"
+              ;;
+            kyc)
+              echo "Required for KYC/AML compliance:"
+              echo "  [ ] Government-issued ID (2 forms)"
+              echo "  [ ] Proof of address"
+              echo "  [ ] Source of funds documentation"
+              echo "  [ ] Beneficial ownership declaration"
+              ;;
+            underwriting)
+              echo "Required for underwriting:"
+              echo "  [ ] Medical exam results"
+              echo "  [ ] Attending physician statement"
+              echo "  [ ] Prescription history"
+              echo "  [ ] Driving record (MVR)"
+              echo "  [ ] Financial statements"
+              ;;
+          esac
+
+      - name: Send collection email
+        run: |
+          echo "Sending document request email..."
+          echo "  Includes: Secure upload link"
+          echo "  Due date: $(date -d '+7 days' +%Y-%m-%d)"
+          echo "  Reminder schedule: Day 3, Day 5, Day 7"
+
+  check-overdue:
+    name: "Check Overdue Documents"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for overdue documents
+        run: |
+          echo "OVERDUE DOCUMENT CHECK"
+          echo "======================="
+          echo "  Scanning all pending document requests..."
+          echo "  Identifying overdue items..."
+          echo ""
+          echo "  Escalation rules:"
+          echo "    3 days overdue: Friendly email reminder"
+          echo "    5 days overdue: Text message + email"
+          echo "    7 days overdue: Phone call from agent"
+          echo "    14 days overdue: Flag for manager review"
+          echo "    30 days overdue: Application may expire warning"
+
+      - name: Generate overdue report
+        run: |
+          echo "## Overdue Documents Report - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Client | Document | Requested | Due | Days Overdue |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|----------|-----------|-----|--------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| *(from tracking system)* | | | | |" >> $GITHUB_STEP_SUMMARY
+
+  document-received:
+    name: "Process Received Document"
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'repository_dispatch' && github.event.action == 'document_received') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'mark_received')
+    steps:
+      - name: Process document
+        run: |
+          echo "DOCUMENT RECEIVED"
+          echo "=================="
+          echo "  1. Validate document quality/completeness"
+          echo "  2. Store in client folder (encrypted)"
+          echo "  3. Update checklist status"
+          echo "  4. Send confirmation to client"
+          echo "  5. Notify agent"
+          echo "  6. Check if all documents now complete"
+          echo "  7. If complete, advance application/process"

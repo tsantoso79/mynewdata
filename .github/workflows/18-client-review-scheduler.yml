@@ -1,0 +1,105 @@
+###############################################################################
+# WORKFLOW 18: Annual/Periodic Client Review Scheduler
+# Ensures every client receives regular coverage reviews. Schedules,
+# prepares, and follows up on review meetings.
+###############################################################################
+name: "18 - Client Review Scheduler"
+
+on:
+  # Daily check for reviews due
+  schedule:
+    - cron: "0 8 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action (scan_due_reviews, prepare_review, schedule_review, complete_review)"
+        required: true
+        default: "scan_due_reviews"
+      client_id:
+        description: "Client ID (for specific actions)"
+        required: false
+
+jobs:
+  scan-due-reviews:
+    name: "Scan for Due Reviews"
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'scan_due_reviews')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Identify clients due for review
+        run: |
+          echo "CLIENT REVIEW SCANNER"
+          echo "======================"
+          echo ""
+          echo "Review frequency rules:"
+          echo "  VIP clients: Every 6 months"
+          echo "  Standard clients: Annually"
+          echo "  Simple policy clients: Every 18 months"
+          echo ""
+          echo "Triggering reviews for:"
+          echo "  - Clients not reviewed in [frequency] period"
+          echo "  - Clients with life events since last review"
+          echo "  - Clients approaching renewal"
+          echo "  - Clients with coverage gaps identified"
+
+      - name: Generate review queue
+        run: |
+          echo "## Client Reviews Due - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Client | Last Review | Products | Priority | Reason |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------------|----------|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| *(from CRM scan)* | | | | |" >> $GITHUB_STEP_SUMMARY
+
+  prepare-review:
+    name: "Prepare Review Package"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'prepare_review'
+    steps:
+      - name: Generate review package
+        run: |
+          echo "CLIENT REVIEW PREPARATION"
+          echo "=========================="
+          echo ""
+          echo "Review package includes:"
+          echo "  1. Current coverage summary (all policies)"
+          echo "  2. Premium history and changes"
+          echo "  3. Claims history"
+          echo "  4. Coverage gap analysis"
+          echo "  5. Market comparison (are they competitive?)"
+          echo "  6. Life changes questionnaire"
+          echo "  7. Beneficiary verification"
+          echo "  8. Cross-sell/upsell opportunities"
+          echo "  9. Referral program update"
+          echo " 10. Satisfaction survey"
+
+      - name: Create talking points
+        run: |
+          echo "AGENT TALKING POINTS:"
+          echo "  - Acknowledge loyalty and relationship"
+          echo "  - Review major life changes"
+          echo "  - Walk through each policy"
+          echo "  - Identify gaps or over-insurance"
+          echo "  - Present new product options"
+          echo "  - Discuss beneficiary updates"
+          echo "  - Ask about referrals"
+          echo "  - Confirm contact preferences"
+
+  complete-review:
+    name: "Post-Review Actions"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'complete_review'
+    steps:
+      - name: Process review outcomes
+        run: |
+          echo "POST-REVIEW ACTIONS:"
+          echo "  1. Send review summary email to client"
+          echo "  2. Update CRM with review notes"
+          echo "  3. Process any policy changes"
+          echo "  4. Generate new quotes if requested"
+          echo "  5. Schedule next review date"
+          echo "  6. Update beneficiary records"
+          echo "  7. Send thank-you note"
+          echo "  8. Log cross-sell opportunities for follow-up"

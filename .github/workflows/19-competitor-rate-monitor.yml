@@ -1,0 +1,84 @@
+###############################################################################
+# WORKFLOW 19: Competitor & Rate Monitoring
+# Monitors carrier rate changes, competitor activity, and market conditions
+# to keep agents informed and proactive with clients.
+###############################################################################
+name: "19 - Competitor & Rate Monitor"
+
+on:
+  # Weekly market scan on Mondays
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: "Scan type (rate_changes, market_update, competitor_analysis)"
+        required: true
+        default: "rate_changes"
+      product_line:
+        description: "Product line (auto, home, life, health, all)"
+        required: false
+        default: "all"
+
+jobs:
+  rate-change-monitor:
+    name: "Monitor Rate Changes"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check carrier rate updates
+        run: |
+          echo "CARRIER RATE CHANGE MONITOR"
+          echo "============================"
+          echo ""
+          echo "Scanning appointed carriers for:"
+          echo "  - Rate increases (flag affected clients)"
+          echo "  - Rate decreases (re-quote opportunities)"
+          echo "  - New product launches"
+          echo "  - Underwriting guideline changes"
+          echo "  - Commission structure changes"
+          echo "  - Territory changes"
+
+      - name: Impact analysis
+        run: |
+          echo "CLIENT IMPACT ANALYSIS:"
+          echo "  For each rate change:"
+          echo "    - Number of affected clients"
+          echo "    - Average premium impact"
+          echo "    - Retention risk assessment"
+          echo "    - Alternative carrier options"
+          echo "    - Recommended client communication"
+
+      - name: Generate rate alert
+        run: |
+          echo "## Rate Change Alert - $(date +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Rate Changes This Week" >> $GITHUB_STEP_SUMMARY
+          echo "| Carrier | Product | Change | Effective | Impact |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|---------|--------|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| *(from carrier bulletins)* | | | | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Action Items" >> $GITHUB_STEP_SUMMARY
+          echo "- Re-quote affected clients" >> $GITHUB_STEP_SUMMARY
+          echo "- Proactive communication for rate increases" >> $GITHUB_STEP_SUMMARY
+          echo "- Cross-sell to clients getting better rates" >> $GITHUB_STEP_SUMMARY
+
+  market-intelligence:
+    name: "Weekly Market Intelligence"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compile market update
+        run: |
+          echo "MARKET INTELLIGENCE BRIEF"
+          echo "========================="
+          echo ""
+          echo "Topics tracked:"
+          echo "  - Interest rate movements"
+          echo "  - Regulatory changes"
+          echo "  - Industry M&A activity"
+          echo "  - New competitor entries"
+          echo "  - Technology disruptions"
+          echo "  - Consumer trend data"
+          echo "  - Natural disaster impact"
+          echo "  - Legislative updates"

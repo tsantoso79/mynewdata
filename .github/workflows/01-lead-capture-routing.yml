@@ -1,0 +1,157 @@
+###############################################################################
+# WORKFLOW 01: Lead Capture & Routing
+# Automatically captures new leads from multiple sources, scores them,
+# and routes them to the appropriate agent or follow-up queue.
+###############################################################################
+name: "01 - Lead Capture & Routing"
+
+on:
+  # Triggered via API when a new lead comes in (web form, referral, ad campaign)
+  repository_dispatch:
+    types: [new_lead]
+  # Manual trigger for importing leads
+  workflow_dispatch:
+    inputs:
+      lead_name:
+        description: "Lead full name"
+        required: true
+      lead_phone:
+        description: "Lead phone number"
+        required: true
+      lead_email:
+        description: "Lead email address"
+        required: true
+      lead_source:
+        description: "Source (web_form, referral, ad_campaign, cold_call, walk_in)"
+        required: true
+        default: "web_form"
+      product_interest:
+        description: "Product interest (life, health, auto, home, investment, retirement)"
+        required: true
+      lead_notes:
+        description: "Additional notes"
+        required: false
+        default: ""
+
+env:
+  CRM_API_URL: ${{ secrets.CRM_API_URL }}
+  CRM_API_KEY: ${{ secrets.CRM_API_KEY }}
+  NOTIFICATION_WEBHOOK: ${{ secrets.NOTIFICATION_WEBHOOK }}
+
+jobs:
+  capture-lead:
+    name: "Capture & Validate Lead"
+    runs-on: ubuntu-latest
+    outputs:
+      lead_id: ${{ steps.create.outputs.lead_id }}
+      lead_score: ${{ steps.score.outputs.score }}
+      assigned_agent: ${{ steps.route.outputs.agent }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract lead data
+        id: extract
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "name=${{ github.event.client_payload.name }}" >> $GITHUB_OUTPUT
+            echo "phone=${{ github.event.client_payload.phone }}" >> $GITHUB_OUTPUT
+            echo "email=${{ github.event.client_payload.email }}" >> $GITHUB_OUTPUT
+            echo "source=${{ github.event.client_payload.source }}" >> $GITHUB_OUTPUT
+            echo "product=${{ github.event.client_payload.product_interest }}" >> $GITHUB_OUTPUT
+            echo "notes=${{ github.event.client_payload.notes }}" >> $GITHUB_OUTPUT
+          else
+            echo "name=${{ inputs.lead_name }}" >> $GITHUB_OUTPUT
+            echo "phone=${{ inputs.lead_phone }}" >> $GITHUB_OUTPUT
+            echo "email=${{ inputs.lead_email }}" >> $GITHUB_OUTPUT
+            echo "source=${{ inputs.lead_source }}" >> $GITHUB_OUTPUT
+            echo "product=${{ inputs.product_interest }}" >> $GITHUB_OUTPUT
+            echo "notes=${{ inputs.lead_notes }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate lead data
+        id: validate
+        run: |
+          ERRORS=""
+          if [ -z "${{ steps.extract.outputs.name }}" ]; then
+            ERRORS="${ERRORS}Missing name. "
+          fi
+          if [ -z "${{ steps.extract.outputs.phone }}" ] && [ -z "${{ steps.extract.outputs.email }}" ]; then
+            ERRORS="${ERRORS}Must have phone or email. "
+          fi
+          if [ -n "$ERRORS" ]; then
+            echo "::error::Validation failed: $ERRORS"
+            exit 1
+          fi
+          echo "valid=true" >> $GITHUB_OUTPUT
+
+      - name: Score lead
+        id: score
+        run: |
+          SCORE=50
+          SOURCE="${{ steps.extract.outputs.source }}"
+          PRODUCT="${{ steps.extract.outputs.product }}"
+          # Source scoring
+          case "$SOURCE" in
+            referral) SCORE=$((SCORE + 30)) ;;
+            web_form) SCORE=$((SCORE + 20)) ;;
+            ad_campaign) SCORE=$((SCORE + 15)) ;;
+            walk_in) SCORE=$((SCORE + 25)) ;;
+            cold_call) SCORE=$((SCORE + 5)) ;;
+          esac
+          # Product scoring (higher-value products score higher)
+          case "$PRODUCT" in
+            investment|retirement) SCORE=$((SCORE + 20)) ;;
+            life) SCORE=$((SCORE + 15)) ;;
+            health) SCORE=$((SCORE + 10)) ;;
+            home) SCORE=$((SCORE + 10)) ;;
+            auto) SCORE=$((SCORE + 5)) ;;
+          esac
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          echo "Lead scored: $SCORE/100"
+
+      - name: Route to agent
+        id: route
+        run: |
+          SCORE=${{ steps.score.outputs.score }}
+          PRODUCT="${{ steps.extract.outputs.product }}"
+          # Route hot leads (80+) to senior agents, warm (50-79) to standard queue
+          if [ "$SCORE" -ge 80 ]; then
+            PRIORITY="hot"
+            QUEUE="senior_agent_queue"
+          elif [ "$SCORE" -ge 50 ]; then
+            PRIORITY="warm"
+            QUEUE="standard_queue"
+          else
+            PRIORITY="cold"
+            QUEUE="nurture_queue"
+          fi
+          echo "priority=$PRIORITY" >> $GITHUB_OUTPUT
+          echo "queue=$QUEUE" >> $GITHUB_OUTPUT
+          echo "agent=auto_assigned" >> $GITHUB_OUTPUT
+          echo "Routed to $QUEUE with priority $PRIORITY"
+
+      - name: Create lead in CRM
+        id: create
+        run: |
+          LEAD_ID="LEAD-$(date +%Y%m%d%H%M%S)-$(shuf -i 1000-9999 -n 1)"
+          echo "lead_id=$LEAD_ID" >> $GITHUB_OUTPUT
+          echo "Created lead $LEAD_ID in CRM"
+          # In production: POST to CRM API
+          # curl -X POST "$CRM_API_URL/leads" \
+          #   -H "Authorization: Bearer $CRM_API_KEY" \
+          #   -d '{"id":"'$LEAD_ID'","name":"...","score":"..."}'
+
+      - name: Send notification
+        run: |
+          echo "Notifying agent about new lead:"
+          echo "  Lead: ${{ steps.extract.outputs.name }}"
+          echo "  Score: ${{ steps.score.outputs.score }}/100"
+          echo "  Priority: ${{ steps.route.outputs.priority }}"
+          echo "  Product: ${{ steps.extract.outputs.product }}"
+          echo "  Queue: ${{ steps.route.outputs.queue }}"
+          # In production: Send via Slack/Teams/SMS webhook
+          # curl -X POST "$NOTIFICATION_WEBHOOK" -d '{"text":"New lead: ..."}'
+
+      - name: Log to activity tracker
+        run: |
+          echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | NEW_LEAD | ${{ steps.create.outputs.lead_id }} | Score: ${{ steps.score.outputs.score }} | Source: ${{ steps.extract.outputs.source }}" >> $GITHUB_STEP_SUMMARY
